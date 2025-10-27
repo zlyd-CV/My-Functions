@@ -1,3 +1,4 @@
+# 本项目用于一些检查功能的实现
 import os
 
 # 生成目录结构
@@ -16,4 +17,4 @@ def generate_tree(path, indent=""):
             generate_tree(full_path, indent + "│   ")
 
 if __name__ == "__main__":
-    generate_tree(".")
+    generate_tree(".") # 从当前目录开始生成目录结构

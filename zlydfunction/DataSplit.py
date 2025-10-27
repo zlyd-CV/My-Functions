@@ -1,7 +1,7 @@
+# 本项目定义了用于数据集划分的类和方法，部分功能可能和ReadDatasets.py中重复，但为了模块化和职责单一，仍然单独实现
 from typing import Optional, Tuple
 import torch
 from torch.utils.data import random_split, Dataset
-
 
 # 实现随机拆分交叉验证
 class Shuffle_Split_Cross_Validation:

@@ -1,3 +1,4 @@
+# 本项目用于对数据集的读取与预处理
 from typing import Optional, Callable, Any, Tuple
 from torch.utils.data import Dataset
 import numpy as np
@@ -142,6 +143,5 @@ class CombinedDataset(Dataset):
 
         return image, mask
 
-    def __len__(self) -> int:
-        return len(self.image_dataset)
+
 

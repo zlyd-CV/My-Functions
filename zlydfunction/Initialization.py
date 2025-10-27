@@ -1,4 +1,6 @@
+# 本项目定义了一些初始化神经网络权重的方法，供模型训练时使用。
 import torch.nn as nn
+
 
 # 定义了各种初始化的方法
 def init_weights(model, init_type='normal', gain=0.02):
