@@ -26,26 +26,29 @@ def generate_tree(path, indent=""):
 
 
 # 检查软件包依赖
-def check_packages():
+def check_packages(required_packages=None):
     """
-    :return: 无返回值,在控制台打印缺失的包
+    检查并打印缺失的依赖包
+    使用示例:
+    check_packages()
+    """
+    if required_packages is None:
+        required_packages = ['numpy', 'torch',
+                             'PIL', 'pydicom', 'SimpleITK', 'monai']
 
-    使用示例：
-    check_dependencies()
-    """
-    required_packages = ['numpy', 'torch', 'PIL']
-    missing_packages = []
-    for package in required_packages:
+    missing = []
+    for pkg in required_packages:
         try:
-            __import__(package)
+            __import__(pkg)
         except ImportError:
-            missing_packages.append(package)
-    if missing_packages:
-        print(f"缺失以下软件包，请安装：")
-        for index, pkg in enumerate(missing_packages):
-            print(f"{index + 1}:{pkg}")
+            missing.append(pkg)
+
+    if missing:
+        print("缺失以下软件包，请安装：")
+        for i, pkg in enumerate(missing, 1):
+            print(f"{i}: {pkg}")
     else:
-        print(f"所有依赖包均已安装,zlydfunctions需要的软件包{required_packages}。")
+        print(f"所有依赖包均已安装: {required_packages}")
 
 
 if __name__ == "__main__":

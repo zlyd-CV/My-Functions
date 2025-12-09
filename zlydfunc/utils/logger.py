@@ -1,6 +1,6 @@
 """
 File: logger.py
-Description: 训练日志记录器，支持CSV保存和曲线绘制。
+Description: 训练日志记录器,支持CSV保存和曲线绘制。
 Author: zlyd-CV
 License: MIT
 """
