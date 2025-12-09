@@ -1,8 +1,15 @@
+"""
+File: predict.py
+Description: 模型预测脚本片段。
+Author: zlyd-CV
+License: MIT
+"""
 import os
 import torch
 from PIL import Image
 
-def test_model(model, test_loader, device, save_dir):
+
+def predict_and_save(model, test_loader, device, save_dir):
     """
     :param model: 训练好的模型，用于对测试集进行预测
     :param test_loader: 测试集的DataLoader对象，提供测试数据
@@ -10,7 +17,7 @@ def test_model(model, test_loader, device, save_dir):
     :param save_dir: 预测结果保存的目录路径
     :return: 无返回值，预测结果以图像形式保存在指定目录
     使用示例：
-    test_model(trained_model, test_dataloader, 'cuda', './predictions')
+    predict_and_save(trained_model, test_dataloader, 'cuda', './predictions')
     该示例中，trained_model是训练好的模型，test_dataloader是测试集的DataLoader，
     计算设备为GPU，预测结果将保存在当前目录下的predictions文件夹中。
     """

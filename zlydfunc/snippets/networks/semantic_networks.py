@@ -1,3 +1,9 @@
+"""
+File: semantic_networks.py
+Description: 语义分割神经网络架构集合。
+Author: zlyd-CV
+License: MIT
+"""
 # 本项目用于定义语义分割模型的网络结构
 from typing import Optional
 
@@ -34,7 +40,8 @@ class DoubleConv(nn.Module):
 class TransposeConv(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(TransposeConv, self).__init__()
-        self.up_conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2)
+        self.up_conv = nn.ConvTranspose2d(
+            in_channels, out_channels, kernel_size=2, stride=2)
 
     def forward(self, x):
         return self.up_conv(x)
@@ -104,51 +111,72 @@ class UNet_semantic(nn.Module):
         # 在每个阶段下采样之前，保存特征图用于跳跃连接
         # 阶段 1: 512x512 -> 256x256
         skip1 = self.down1(x)  # x:(1, 1, 512, 512) -> skip1:(1, 64, 512, 512)
-        pool1 = self.pool(skip1)  # skip1:(1, 64, 512, 512) -> pool1:(1, 64, 256, 256)
+        # skip1:(1, 64, 512, 512) -> pool1:(1, 64, 256, 256)
+        pool1 = self.pool(skip1)
 
         # 阶段 2: 256x256 -> 128x128
-        skip2 = self.down2(pool1)  # pool1:(1, 64, 256, 256) -> skip2:(1, 128, 256, 256)
-        pool2 = self.pool(skip2)  # skip2:(1, 128, 256, 256) -> pool2:(1, 128, 128, 128)
+        # pool1:(1, 64, 256, 256) -> skip2:(1, 128, 256, 256)
+        skip2 = self.down2(pool1)
+        # skip2:(1, 128, 256, 256) -> pool2:(1, 128, 128, 128)
+        pool2 = self.pool(skip2)
 
         # 阶段 3: 128x128 -> 64x64
-        skip3 = self.down3(pool2)  # pool2:(1, 128, 128, 128) -> skip3:(1, 256, 128, 128)
-        pool3 = self.pool(skip3)  # skip3:(1, 256, 128, 128) -> pool3:(1, 256, 64, 64)
+        # pool2:(1, 128, 128, 128) -> skip3:(1, 256, 128, 128)
+        skip3 = self.down3(pool2)
+        # skip3:(1, 256, 128, 128) -> pool3:(1, 256, 64, 64)
+        pool3 = self.pool(skip3)
 
         # 阶段 4: 64x64 -> 32x32
-        skip4 = self.down4(pool3)  # pool3:(1, 256, 64, 64) -> skip4:(1, 512, 64, 64)
-        pool4 = self.pool(skip4)  # skip4:(1, 512, 64, 64) -> pool4:(1, 512, 32, 32)
+        # pool3:(1, 256, 64, 64) -> skip4:(1, 512, 64, 64)
+        skip4 = self.down4(pool3)
+        # skip4:(1, 512, 64, 64) -> pool4:(1, 512, 32, 32)
+        pool4 = self.pool(skip4)
 
         # 瓶颈层
-        bottle = self.bottleneck(pool4)  # pool4:(1, 512, 32, 32) -> bottle:(1, 1024, 32, 32)
+        # pool4:(1, 512, 32, 32) -> bottle:(1, 1024, 32, 32)
+        bottle = self.bottleneck(pool4)
 
         # 在每个阶段，进行上采样，然后与编码器对应层的输出进行拼接
         # 解码阶段 4: 32x32 -> 64x64(上采样)
-        up4_out = self.up4(bottle)  # bottle:(1, 1024, 32, 32) -> up4_out:(1, 512, 64, 64)
+        # bottle:(1, 1024, 32, 32) -> up4_out:(1, 512, 64, 64)
+        up4_out = self.up4(bottle)
         merged4 = torch.cat([up4_out, skip4],
-                            dim=1)  # up4_out:(1, 512, 64, 64) + skip4:(1, 512, 64, 64) -> merged4:(1, 1024, 64, 64)
-        up_conv4_out = self.up_conv4(merged4)  # merged4:(1, 1024, 64, 64) -> up_conv4_out:(1, 512, 64, 64)
+                            # up4_out:(1, 512, 64, 64) + skip4:(1, 512, 64, 64) -> merged4:(1, 1024, 64, 64)
+                            dim=1)
+        # merged4:(1, 1024, 64, 64) -> up_conv4_out:(1, 512, 64, 64)
+        up_conv4_out = self.up_conv4(merged4)
 
         # 解码阶段 3: 64x64 -> 128x128
-        up3_out = self.up3(up_conv4_out)  # up_conv4_out:(1, 512, 64, 64) -> up3_out:(1, 256, 128, 128)
+        # up_conv4_out:(1, 512, 64, 64) -> up3_out:(1, 256, 128, 128)
+        up3_out = self.up3(up_conv4_out)
         merged3 = torch.cat([up3_out, skip3],
-                            dim=1)  # up3_out:(1, 256, 128, 128) + skip3:(1, 256, 128, 128) -> merged3:(1, 512, 128, 128)
-        up_conv3_out = self.up_conv3(merged3)  # merged3:(1, 512, 128, 128) -> up_conv3_out:(1, 256, 128, 128)
+                            # up3_out:(1, 256, 128, 128) + skip3:(1, 256, 128, 128) -> merged3:(1, 512, 128, 128)
+                            dim=1)
+        # merged3:(1, 512, 128, 128) -> up_conv3_out:(1, 256, 128, 128)
+        up_conv3_out = self.up_conv3(merged3)
 
         # 解码阶段 2: 128x128 -> 256x256
-        up2_out = self.up2(up_conv3_out)  # up_conv3_out:(1, 256, 128, 128) -> up2_out:(1, 128, 256, 256)
+        # up_conv3_out:(1, 256, 128, 128) -> up2_out:(1, 128, 256, 256)
+        up2_out = self.up2(up_conv3_out)
         merged2 = torch.cat([up2_out, skip2],
-                            dim=1)  # up2_out:(1, 128, 256, 256) + skip2:(1, 128, 256, 256) -> merged2:(1, 256, 256, 256)
-        up_conv2_out = self.up_conv2(merged2)  # merged2:(1, 256, 256, 256) -> up_conv2_out:(1, 128, 256, 256)
+                            # up2_out:(1, 128, 256, 256) + skip2:(1, 128, 256, 256) -> merged2:(1, 256, 256, 256)
+                            dim=1)
+        # merged2:(1, 256, 256, 256) -> up_conv2_out:(1, 128, 256, 256)
+        up_conv2_out = self.up_conv2(merged2)
 
         # 解码阶段 1: 256x256 -> 512x512
-        up1_out = self.up1(up_conv2_out)  # up_conv2_out:(1, 128, 256, 256) -> up1_out:(1, 64, 512, 512)
+        # up_conv2_out:(1, 128, 256, 256) -> up1_out:(1, 64, 512, 512)
+        up1_out = self.up1(up_conv2_out)
         merged1 = torch.cat([up1_out, skip1],
-                            dim=1)  # up1_out:(1, 64, 512, 512) + skip1:(1, 64, 512, 512) -> merged1:(1, 128, 512, 512)
-        up_conv1_out = self.up_conv1(merged1)  # merged1:(1, 128, 512, 512) -> up_conv1_out:(1, 64, 512, 512)
+                            # up1_out:(1, 64, 512, 512) + skip1:(1, 64, 512, 512) -> merged1:(1, 128, 512, 512)
+                            dim=1)
+        # merged1:(1, 128, 512, 512) -> up_conv1_out:(1, 64, 512, 512)
+        up_conv1_out = self.up_conv1(merged1)
 
         # 使用1x1卷积将通道数调整为最终的类别数 (out_channels)，然后通过sigmoid激活函数得到每个像素的概率
         return torch.sigmoid(
-            self.final_conv(up_conv1_out))  # up_conv1_out:(1, 64, 512, 512) -> final output:(1, out_channels, 512, 512)
+            # up_conv1_out:(1, 64, 512, 512) -> final output:(1, out_channels, 512, 512)
+            self.final_conv(up_conv1_out))
 
 
 class UNetPlusPlus_semantic(nn.Module):
@@ -292,7 +320,8 @@ class UNetPlusPlus_semantic(nn.Module):
         conv1_1 = self.conv1_1(merge1_1)  # 输入128→输出64
 
         # 融合输出
-        final_merge = torch.cat([conv4_1, conv3_1, conv2_1, conv1_1], dim=1)  # 64*4=256
+        final_merge = torch.cat(
+            [conv4_1, conv3_1, conv2_1, conv1_1], dim=1)  # 64*4=256
         out = self.final_conv(final_merge)
         return self.sigmoid(out)
 
@@ -302,17 +331,20 @@ class BasicBlock(nn.Module):
 
     def __init__(self, in_channels, out_channels, stride=1):
         super(BasicBlock, self).__init__()
-        self.Conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=5, stride=stride, padding=2, bias=False)
+        self.Conv1 = nn.Conv2d(
+            in_channels, out_channels, kernel_size=5, stride=stride, padding=2, bias=False)
         self.BN1 = nn.BatchNorm2d(out_channels)
         self.ReLU1 = nn.ReLU(inplace=True)
 
-        self.Conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
+        self.Conv2 = nn.Conv2d(out_channels, out_channels,
+                               kernel_size=3, stride=1, padding=1, bias=False)
         self.BN2 = nn.BatchNorm2d(out_channels)
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_channels != self.expansion * out_channels:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(in_channels, self.expansion * out_channels,
+                          kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(self.expansion * out_channels),
             )
         else:
@@ -332,10 +364,9 @@ class BasicBlock(nn.Module):
 
 
 class ResNet34_semantic(nn.Module):
-    def __init__(self, num_blocks: Optional[list, tuple],input_channel=None, num_classes=1, first_output_channels=64, block=BasicBlock):
+    def __init__(self, num_blocks: Optional[list, tuple], input_channel=None, num_classes=1, first_output_channels=64, block=BasicBlock):
         super(ResNet34_semantic, self).__init__()
         """
-        帮我写参数介绍莫使用教程
         :param block: 残差块类型，这里使用BasicBlock
         :param num_blocks: 每个阶段的残差块数量，这里为[3, 4, 6, 3]对应ResNet34
         :param num_classes: 输出类别数，默认为1（二分类任务）
@@ -388,27 +419,36 @@ class ResNet34_semantic(nn.Module):
         self.in_channels = first_output_channels
 
         # 输入通道保持1（ISBI是单通道灰度图）
-        self.Conv1 = nn.Conv2d(input_channel, self.in_channels, kernel_size=7, stride=1, padding=3, bias=False)
+        self.Conv1 = nn.Conv2d(input_channel, self.in_channels,
+                               kernel_size=7, stride=1, padding=3, bias=False)
         self.BN1 = nn.BatchNorm2d(self.in_channels)
         self.ReLU1 = nn.ReLU(inplace=True)
 
         # 主干网络结构完全不变
-        self.layer1 = self.make_layer(block, 64, num_blocks[0], stride=2)  # 512->256（下采样1次）
-        self.layer2 = self.make_layer(block, 128, num_blocks[1], stride=2)  # 256->128（下采样2次）
-        self.layer3 = self.make_layer(block, 256, num_blocks[2], stride=2)  # 128->64（下采样3次）
-        self.layer4 = self.make_layer(block, 512, num_blocks[3], stride=2)  # 64->32（下采样4次）
+        self.layer1 = self.make_layer(
+            block, 64, num_blocks[0], stride=2)  # 512->256（下采样1次）
+        self.layer2 = self.make_layer(
+            block, 128, num_blocks[1], stride=2)  # 256->128（下采样2次）
+        self.layer3 = self.make_layer(
+            block, 256, num_blocks[2], stride=2)  # 128->64（下采样3次）
+        self.layer4 = self.make_layer(
+            block, 512, num_blocks[3], stride=2)  # 64->32（下采样4次）
 
         # 解码器上采样参数不变（stride=2，每次上采样尺寸翻倍）
-        self.up1 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)  # 32->64（与x3的64匹配）
+        self.up1 = nn.ConvTranspose2d(
+            512, 256, kernel_size=2, stride=2)  # 32->64（与x3的64匹配）
         self.conv_up1 = block(256 + 256, 256)
 
-        self.up2 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)  # 64->128（与x2的128匹配）
+        self.up2 = nn.ConvTranspose2d(
+            256, 128, kernel_size=2, stride=2)  # 64->128（与x2的128匹配）
         self.conv_up2 = block(128 + 128, 128)
 
-        self.up3 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)  # 128->256（与x1的256匹配）
+        self.up3 = nn.ConvTranspose2d(
+            128, 64, kernel_size=2, stride=2)  # 128->256（与x1的256匹配）
         self.conv_up3 = block(64 + 64, 64)
 
-        self.up4 = nn.ConvTranspose2d(64, 64, kernel_size=2, stride=2)  # 256->512（与x0的512匹配）
+        self.up4 = nn.ConvTranspose2d(
+            64, 64, kernel_size=2, stride=2)  # 256->512（与x0的512匹配）
         self.conv_up4 = block(64 + 64, 64)
 
         self.final_conv = nn.Conv2d(64, num_classes, kernel_size=1)

@@ -1,3 +1,9 @@
+"""
+File: classify_networks.py
+Description: 图像分类神经网络架构集合。
+Author: zlyd-CV
+License: MIT
+"""
 # 本项目实现了多种用于图像分类任务的神经网络架构
 import torch
 import torch.nn as nn
@@ -42,7 +48,8 @@ def init_weights(net, init_type='normal', gain=0.02):
             elif init_type == 'orthogonal':
                 init.orthogonal_(module.weight.data, gain=gain)
             else:
-                raise NotImplementedError('initialization method [%s] is not implemented' % init_type)
+                raise NotImplementedError(
+                    'initialization method [%s] is not implemented' % init_type)
             if hasattr(module, 'bias') and module.bias is not None:
                 init.constant_(module.bias.data, 0.0)
         elif classname.find('BatchNorm2d') != -1:
@@ -286,13 +293,15 @@ class Inception(nn.Module):
         self.route2 = nn.Sequential(
             nn.Conv2d(in_channel, out_channels2[0], kernel_size=1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels2[0], out_channels2[1], kernel_size=3, padding=1),
+            nn.Conv2d(out_channels2[0], out_channels2[1],
+                      kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
         )
         self.route3 = nn.Sequential(
             nn.Conv2d(in_channel, out_channels3[0], kernel_size=1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels3[0], out_channels3[1], kernel_size=5, padding=2),
+            nn.Conv2d(out_channels3[0], out_channels3[1],
+                      kernel_size=5, padding=2),
             nn.ReLU(inplace=True),
         )
         self.route4 = nn.Sequential(
@@ -374,18 +383,21 @@ class BasicBlock(nn.Module):
 
     def __init__(self, in_channels, out_channels, stride=1):
         super(BasicBlock, self).__init__()
-        self.Conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.Conv1 = nn.Conv2d(
+            in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
         self.BN1 = nn.BatchNorm2d(out_channels)
         self.ReLU1 = nn.ReLU(inplace=True)
 
-        self.Conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
+        self.Conv2 = nn.Conv2d(out_channels, out_channels,
+                               kernel_size=3, stride=1, padding=1, bias=False)
         self.BN2 = nn.BatchNorm2d(out_channels)
 
         self.shortcut = nn.Sequential()
         # 跳跃连接:如果维度或步长发生变化，需要通过一个 1x1 卷积来匹配 shortcut 的维度(对应原论文中的方法3)
         if stride != 1 or in_channels != self.expansion * out_channels:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(in_channels, self.expansion * out_channels,
+                          kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(self.expansion * out_channels),
             )
         else:
@@ -406,7 +418,7 @@ class BasicBlock(nn.Module):
 
 # 适合图像分类数据集的ResNet34模型
 class ResNet34_classify(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=None, adaptive_pooling_size: Tuple = (1, 1),first_output_channel=64):
+    def __init__(self, block, num_blocks, num_classes=None, adaptive_pooling_size: Tuple = (1, 1), first_output_channel=64):
         super(ResNet34_classify, self).__init__()
         """
         ResNet34模型，适用于图像分类任务，基于残差网络架构设计。
@@ -434,7 +446,8 @@ class ResNet34_classify(nn.Module):
         # 1. 输入通道为 1
         # 2. 使用 3x3, stride=1 的卷积核，替换掉原始的 7x7, stride=2
         # 3. 移除了原始的 MaxPool2d 层
-        self.Conv1 = nn.Conv2d(1, self.in_channels, kernel_size=3, stride=1, padding=1, bias=False)
+        self.Conv1 = nn.Conv2d(1, self.in_channels,
+                               kernel_size=3, stride=1, padding=1, bias=False)
         self.BN1 = nn.BatchNorm2d(64)
         self.ReLU1 = nn.ReLU(inplace=True)
 

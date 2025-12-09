@@ -1,9 +1,21 @@
+"""
+File: initialization.py
+Description: 神经网络权重初始化方法。
+Author: zlyd-CV
+License: MIT
+"""
 # 本项目定义了一些初始化神经网络权重的方法，供模型训练时使用。
 import torch.nn as nn
 
 
 # 定义了各种初始化的方法
 def init_weights(model, init_type='normal', gain=0.02):
+    """
+    :param model: 待初始化的模型
+    :param init_type: 初始化方法类型
+    :param gain: 初始化的方差
+    """
+
     # 定义初始化方法映射字典
     init_methods = {
         'normal': lambda w: nn.init.normal_(w, 0.0, gain),
@@ -13,7 +25,7 @@ def init_weights(model, init_type='normal', gain=0.02):
     }
 
     def init_func(m):
-        classname = m.__class__.__name__
+        classname = m.__class__.__name__  # 获取模块的类名,这里处理的有Conv和Linear层以及BatchNorm2d层
         # 处理卷积层和线性层
         if hasattr(m, 'weight') and ('Conv' in classname or 'Linear' in classname):
             if init_type not in init_methods:

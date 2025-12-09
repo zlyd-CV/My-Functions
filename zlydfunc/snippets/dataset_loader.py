@@ -1,3 +1,9 @@
+"""
+File: dataset_loader.py
+Description: 数据集读取与预处理脚本片段。
+Author: zlyd-CV
+License: MIT
+"""
 # 本项目用于对数据集的读取与预处理
 from typing import Optional, Callable, Any, Tuple
 from torch.utils.data import Dataset
@@ -36,7 +42,8 @@ class CombinedDataset(Dataset):
         """
         # 确保两个数据集长度一致
         if len(image_dataset) != len(mask_dataset):
-            raise ValueError(f"图像数据集长度({len(image_dataset)})与掩码数据集长度({len(mask_dataset)})不匹配")
+            raise ValueError(
+                f"图像数据集长度({len(image_dataset)})与掩码数据集长度({len(mask_dataset)})不匹配")
 
         self.image_dataset = image_dataset  # 图像Dataset类
         self.mask_dataset = mask_dataset  # 掩码Dataset类
@@ -65,16 +72,19 @@ class CombinedDataset(Dataset):
         if isinstance(images_and_masks, torch.Tensor):
             # PyTorch张量通常为 (C, H, W) 或 (H, W)
             if len(images_and_masks.shape) == 3:
-                return images_and_masks.shape[1], images_and_masks.shape[2]  # H, W
+                # H, W
+                return images_and_masks.shape[1], images_and_masks.shape[2]
             elif len(images_and_masks.shape) == 2:
-                return images_and_masks.shape[0], images_and_masks.shape[1]  # H, W
+                # H, W
+                return images_and_masks.shape[0], images_and_masks.shape[1]
             else:
                 raise ValueError(f"不支持的Tensor维度：{images_and_masks.shape}")
 
         elif isinstance(images_and_masks, np.ndarray):
             # OpenCV数组通常为 (H, W, C) 或 (H, W)
             if len(images_and_masks.shape) in (2, 3):
-                return images_and_masks.shape[0], images_and_masks.shape[1]  # H, W
+                # H, W
+                return images_and_masks.shape[0], images_and_masks.shape[1]
             else:
                 raise ValueError(f"不支持的ndarray维度：{images_and_masks.shape}")
 
@@ -84,7 +94,8 @@ class CombinedDataset(Dataset):
             return height, width
 
         else:
-            raise TypeError(f"不支持的数据类型：{type(images_and_masks)}，请使用PIL/ndarray/Tensor")
+            raise TypeError(
+                f"不支持的数据类型：{type(images_and_masks)}，请使用PIL/ndarray/Tensor")
 
     @staticmethod
     def to_tensor(data: Any, data_name: str) -> torch.Tensor:
@@ -96,7 +107,8 @@ class CombinedDataset(Dataset):
         elif isinstance(data, Image.Image):
             return torch.from_numpy(np.array(data))
         else:
-            raise TypeError(f"{data_name}类型不支持：{type(data)}，需为Tensor/ndarray/PIL.Image")
+            raise TypeError(
+                f"{data_name}类型不支持：{type(data)}，需为Tensor/ndarray/PIL.Image")
 
     def validate_spatial_consistency(self) -> None:
         """校验图像与掩码的空间尺寸一致性（高和宽必须相同）"""
@@ -142,6 +154,3 @@ class CombinedDataset(Dataset):
             print(f"警告：索引{idx}的掩码维度异常 {mask.shape}，需为(H, W)或(1, H, W)")
 
         return image, mask
-
-
-
