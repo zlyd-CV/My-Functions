@@ -1,13 +1,13 @@
 """
 File: dicom.py
-Description: DICOM数据处理工具（非图像数据）。
+Description: DICOM数据处理工具(非图像数据)。
 Author: zlyd-CV
 License: MIT
 """
 
 
 def dicom_info(ds):
-    """获取并打印DICOM关键影像信息(支持CT/MRI/PET)"""
+    """获取并打印DICOM关键影像信息(支持CT/MRI/PET),不反悔"""
     m = getattr(ds, 'Modality', 'Unknown')
 
     # 基础Tag

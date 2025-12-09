@@ -1,6 +1,6 @@
 """
 File: io.py
-Description: 3D医学影像（DICOM序列）的输入/输出操作。
+Description: 3D医学影像(DICOM序列)的输入/输出操作。
 Author: zlyd-CV
 License: MIT
 """
@@ -16,7 +16,7 @@ def get_dicom_data(file_path):
 
     使用示例：
     dicom_data = get_dicom_data("path/to/dicom/file.dcm")
-    该示例中，"path/to/dicom/file.dcm"是DICOM文件的路径，函数将返回该文件对应的DICOM数据集对象。
+    该示例中，"path/to/dicom/file.dcm"是DICOM文件的路径,函数将返回该文件对应的DICOM数据集对象。
     """
     dicom_data = pydicom.dcmread(file_path)
     return dicom_data
@@ -29,7 +29,7 @@ def get_dicom_image(file_path):
 
     使用示例：
     dicom_image = get_dicom_image("path/to/dicom/file.dcm")
-    该示例中，"path/to/dicom/file.dcm"是DICOM文件的路径，函数将返回该文件对应的图像数据。
+    该示例中，"path/to/dicom/file.dcm"是DICOM文件的路径,函数将返回该文件对应的图像数据。
     """
 
     # 读取DICOM文件
@@ -46,7 +46,7 @@ def get_and_assemble_dicom_images(directory_path):
 
     使用示例：
     dicom_images = get_dicom_series_images("path/to/dicom/series")
-    该示例中，"path/to/dicom/series"是包含DICOM文件的目录路径，函数将返回该目录下所有DICOM图像数据的ndarray数组，按Z轴顺序排列(D,H,W)
+    该示例中，"path/to/dicom/series"是包含DICOM文件的目录路径,函数将返回该目录下所有DICOM图像数据的ndarray数组,按Z轴顺序排列(D,H,W)
     """
     # 按dicom文件中的InstanceNumber排序
     dicom_files = []
