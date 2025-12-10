@@ -4,9 +4,12 @@ Description: DICOM数据处理工具(非图像数据)。
 Author: zlyd-CV
 License: MIT
 """
+import csv
+import os
+import pydicom
 
 
-def dicom_info(ds):
+def dicom_info(ds, write_csv=None):
     """获取并打印DICOM关键影像信息(支持CT/MRI/PET),不反悔"""
     m = getattr(ds, 'Modality', 'Unknown')
 
@@ -45,3 +48,80 @@ def dicom_info(ds):
                 f"{'注射时间':<10} (RadiopharmaceuticalStartTime): {getattr(seq, 'RadiopharmaceuticalStartTime', 'N/A')}")
         except:
             pass
+
+    if write_csv:
+        # 增加类型检查,确保write_csv为布尔值或字符串,布尔值True时使用默认文件名
+        if isinstance(write_csv, bool):
+            write_csv = 'dicom_info.csv'
+        if not isinstance(write_csv, str):
+            return
+
+        headers = ['Modality', 'SeriesDescription', 'Rows', 'Columns', 'PixelSpacing', 'SliceThickness',
+                   'SpacingBetweenSlices', 'BitsStored', 'PhotometricInterpretation', 'RescaleIntercept',
+                   'RescaleSlope', 'WindowCenter', 'WindowWidth', 'RepetitionTime', 'EchoTime', 'InversionTime',
+                   'FlipAngle', 'MagneticFieldStrength', 'Units', 'PatientWeight', 'DecayCorrection',
+                   'RadionuclideTotalDose', 'RadiopharmaceuticalStartTime']
+        row = {k: getattr(ds, k, '\\') for k in headers}
+        for k in row:
+            if row[k] is None:
+                row[k] = '\\'
+
+        if m == 'PT' and hasattr(ds, 'RadiopharmaceuticalInformationSequence'):
+            try:
+                seq = ds.RadiopharmaceuticalInformationSequence[0]
+                row['RadionuclideTotalDose'] = getattr(
+                    seq, 'RadionuclideTotalDose', '\\')
+                row['RadiopharmaceuticalStartTime'] = getattr(
+                    seq, 'RadiopharmaceuticalStartTime', '\\')
+            except:
+                pass
+
+        is_exist = os.path.exists(write_csv)
+        with open(write_csv, 'a', newline='', encoding='utf-8-sig') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            if not is_exist:
+                writer.writeheader()
+            writer.writerow(row)
+
+
+def load_dicoms(root_dir):
+    """递归加载目录下所有DICOM文件(鲁棒模式)"""
+    dicom_list = []
+    for root, _, files in os.walk(root_dir):
+        for f in files:
+            try:
+                # force=True尝试强制读取,增加鲁棒性
+                dicom_list.append(pydicom.dcmread(os.path.join(root, f), force=True))
+            except:
+                pass
+    return dicom_list
+
+
+def iter_dicoms(root_dir):
+    """递归加载目录下所有DICOM文件(生成器模式,省内存)"""
+    for root, _, files in os.walk(root_dir):
+        for f in files:
+            try:
+                # force=True尝试强制读取,增加鲁棒性,返回pydicom Dataset对象的生成器,避免内存占用过大
+                yield pydicom.dcmread(os.path.join(root, f), force=True)
+            except:
+                pass
+
+
+def dicom_list_info(ds_list, write_csv=None):
+    """批量查看DICOM信息"""
+    if isinstance(write_csv, bool) and write_csv:
+        write_csv = 'dicom_info.csv'
+    last_dir = None  # 初始化状态变量：用于记录"上一次"处理的文件是在哪个文件夹
+    for ds in ds_list:
+        curr_dir = os.path.dirname(ds.filename) if hasattr(
+            ds, 'filename') else None
+
+        if last_dir and curr_dir != last_dir:  # 如果当前文件夹与上一次不同，打印空行分隔
+            print()
+            if isinstance(write_csv, str):
+                with open(write_csv, 'a') as f:
+                    f.write('\n')
+
+        dicom_info(ds, write_csv)
+        last_dir = curr_dir
