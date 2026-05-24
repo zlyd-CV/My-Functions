@@ -1,5 +1,0 @@
-numpy
-matplotlib
-pydicom
-torch
-Pillow
